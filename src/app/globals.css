@@ -118,6 +118,17 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-unifrakturcook), sans-serif; 
+    font-family: var(--font-unifrakturcook), sans-serif;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
