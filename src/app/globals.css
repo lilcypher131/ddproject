@@ -132,3 +132,21 @@
     transform: translateY(0);
   }
 }
+
+@keyframes puloOnda {
+  0%,
+  100% {
+    transform: translateY(-1rem);
+  }
+  50% {
+    transform: translateY(calc(-1rem - var(--altura-pulo, 2px)));
+  }
+}
+
+.animate-pulo-onda {
+  animation: puloOnda 1s ease-in-out infinite;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out;
+}
