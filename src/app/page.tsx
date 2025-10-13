@@ -38,7 +38,7 @@ export default function Home() {
       setTimeout(() => {
         setExibindoVideo(false);
       }, 500);
-    }, 1000); // 7s
+    }, 7000); // 7 segundos
   };
 
   const iniciarBatalha = () => {

@@ -1,6 +1,5 @@
 "use client"
 
-// MonstrosContext.tsx
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Carta } from "../types/carta";
 
