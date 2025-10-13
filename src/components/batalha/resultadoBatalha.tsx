@@ -1,6 +1,6 @@
 "use client"
 
-import type { ResultadoBatalha } from "@/types/monstro"
+import type { ResultadoBatalha } from "@/types/carta"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
@@ -115,7 +115,7 @@ export function ResultadosBatalha({ resultado, aoJogarNovamente, aoVoltarHome }:
               <div key={index} className="bg-amber-50 rounded-lg p-4 flex items-center justify-between gap-4 border border-amber-200">
                 <div className="flex flex-col max-w-[120px] w-full sm:flex-row items-center justify-around gap-3">
                   <img
-                    src={duelo.monstroJogador.imgUrl || "/placeholder.svg"}
+                    src={duelo.monstroJogador.foto || "/placeholder.svg"}
                     alt={duelo.monstroJogador.nome}
                     className="w-12 h-12 object-contain"
                   />
@@ -135,7 +135,7 @@ export function ResultadosBatalha({ resultado, aoJogarNovamente, aoVoltarHome }:
                 <div className="flex flex-col-reverse max-w-[120px] w-full sm:flex-row items-center justify-around gap-3">
                   <span className="font-semibold text-red-800">{duelo.monstroInimigo.nome}</span>
                   <img
-                    src={duelo.monstroInimigo.imgUrl || "/placeholder.svg"}
+                    src={duelo.monstroInimigo.foto || "/placeholder.svg"}
                     alt={duelo.monstroInimigo.nome}
                     className="w-12 h-12 object-contain"
                   />

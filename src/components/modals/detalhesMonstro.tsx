@@ -1,11 +1,10 @@
 "use client"
 
-import type { Monstro } from "@/types/monstro"
-import { obterCorRaridade } from "@/lib/apiSimulada"
+import type { Carta } from "@/types/carta"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface PropriedadesDetalhesMonstro {
-  monstro: Monstro
+  monstro: Carta
   aberto: boolean
   aoFechar: () => void
 }
@@ -17,9 +16,6 @@ export function DetalhesMonstro({ monstro, aberto, aoFechar }: PropriedadesDetal
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-amber-900 flex items-center gap-2">
             {monstro.nome}
-            <span className={`${obterCorRaridade(monstro.raridade)} text-white text-xs px-3 py-1 rounded-full`}>
-              {monstro.raridade.toUpperCase()}
-            </span>
           </DialogTitle>
           {monstro.descricao && (
             <DialogDescription className="text-amber-800 italic">{monstro.descricao}</DialogDescription>
@@ -30,7 +26,7 @@ export function DetalhesMonstro({ monstro, aberto, aoFechar }: PropriedadesDetal
           {/* Imagem */}
           <div className="flex justify-center p-4 bg-white rounded-lg shadow-inner">
             <img
-              src={monstro.imgUrl || "/placeholder.svg"}
+              src={monstro.foto || "/placeholder.svg"}
               alt={`Imagem do ${monstro.nome}`}
               className="max-h-48 w-auto object-contain"
             />
@@ -38,27 +34,11 @@ export function DetalhesMonstro({ monstro, aberto, aoFechar }: PropriedadesDetal
 
           {/* Atributos */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <AtributoMonstro label="Força" valor={monstro.forca} cor="text-red-700" />
             <AtributoMonstro label="Dano" valor={monstro.dano} cor="text-orange-700" />
             <AtributoMonstro label="Vida" valor={monstro.vida} cor="text-green-700" />
             <AtributoMonstro label="Defesa" valor={monstro.defesa} cor="text-blue-700" />
             <AtributoMonstro label="Velocidade" valor={monstro.velocidade} cor="text-purple-700" />
           </div>
-
-          {/* Habilidades */}
-          {monstro.habilidades && monstro.habilidades.length > 0 && (
-            <div className="bg-white rounded-lg p-3 shadow-inner">
-              <h3 className="font-bold text-amber-900 mb-2">Habilidades:</h3>
-              <ul className="space-y-1">
-                {monstro.habilidades.map((habilidade, index) => (
-                  <li key={index} className="text-sm text-amber-800 flex items-start gap-2">
-                    <span className="text-amber-600">•</span>
-                    {habilidade}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>

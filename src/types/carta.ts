@@ -1,21 +1,16 @@
-export type Raridade = "comum" | "raro" | "epico" | "lendario"
-
-export interface Monstro {
-  id: string
+export interface Carta {
+  id: number
   nome: string
-  forca: number
   dano: number
   vida: number
   defesa: number
   velocidade: number
-  raridade: Raridade
-  habilidades: string[]
-  imgUrl: string
+  foto: string
   descricao?: string
 }
 
 export interface ResultadoDuelo {
-  vencedor: Monstro | null
+  vencedor: Carta | null
   tipoVitoria: "normal" | "empate" | "desclassificacao"
   detalhes: {
     danoA: number
@@ -27,8 +22,8 @@ export interface ResultadoDuelo {
 
 export interface ResultadoBatalha {
   duelos: {
-    monstroJogador: Monstro
-    monstroInimigo: Monstro
+    monstroJogador: Carta
+    monstroInimigo: Carta
     resultado: ResultadoDuelo
   }[]
   vitoriasJogador: number

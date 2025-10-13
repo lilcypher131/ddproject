@@ -1,121 +1,175 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { Monstro, ResultadoBatalha, ResultadoDuelo } from "@/types/monstro"
-import { gerarInimigos, gerarDeckJogador, duelar } from "@/lib/apiSimulada"
-import CartaMonstro from "@/components/cards/cartaMonstro"
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
-import { ResultadosBatalha } from "@/components/batalha/resultadoBatalha"
-import { AnimacaoDuelo } from "@/components/batalha/animacaoDuelo"
+import { useState, useEffect } from "react";
+import type { Carta, ResultadoBatalha, ResultadoDuelo } from "@/types/carta";
+import CartaMonstro from "@/components/cards/cartaMonstro";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { ResultadosBatalha } from "@/components/batalha/resultadoBatalha";
+import { AnimacaoDuelo } from "@/components/batalha/animacaoDuelo";
+import { useMonstros } from "@/contexts/MonstrosContext";
+import { callApiAsync } from "@/utils/api";
 
 type EstadoBatalha = "preparacao" | "pareamento" | "duelo" | "resultado";
 
 interface Pareamento {
-  jogador: Monstro | null,
-  inimigo: Monstro | null,
+  jogador: Carta | null;
+  inimigo: Carta | null;
 }
 
 export default function PaginaBatalha() {
-  const router = useRouter()
-  const [estadoBatalha, setEstadoBatalha] = useState<EstadoBatalha>("preparacao")
-  const [monstrosJogador, setMonstrosJogador] = useState<Monstro[]>([])
-  const [monstrosInimigo, setMonstrosInimigo] = useState<Monstro[]>([])
+  const { monstros } = useMonstros();
+
+  const router = useRouter();
+  const [estadoBatalha, setEstadoBatalha] =
+    useState<EstadoBatalha>("preparacao");
+  const [monstrosJogador, setMonstrosJogador] = useState<Carta[]>([]);
+  const [monstrosInimigo, setMonstrosInimigo] = useState<Carta[]>([]);
+  const [batalhaIniciada, setBatalhaIniciada] = useState(false);
   const [pareamentos, setPareamentos] = useState<Pareamento[]>([
     { jogador: null, inimigo: null },
     { jogador: null, inimigo: null },
     { jogador: null, inimigo: null },
-  ])
-  const [monstroSelecionado, setMonstroSelecionado] = useState<Monstro | null>(null)
-  const [resultadoBatalha, setResultadoBatalha] = useState<ResultadoBatalha | null>(null)
-  const [dueloAtual, setDueloAtual] = useState<number>(0)
-  const [resultadoDueloAtual, setResultadoDueloAtual] = useState<ResultadoDuelo | null>(null)
+  ]);
+  const [monstroSelecionado, setMonstroSelecionado] = useState<Carta | null>(
+    null
+  );
+  const [resultadoBatalha, setResultadoBatalha] =
+    useState<ResultadoBatalha | null>(null);
+  const [dueloAtual, setDueloAtual] = useState<number>(0);
+  const [resultadoDueloAtual, setResultadoDueloAtual] =
+    useState<ResultadoDuelo | null>(null);
 
   useEffect(() => {
-    iniciarBatalha()
-  }, [])
-
-  const iniciarBatalha = () => {
-    const jogador = gerarDeckJogador(3)
-    const inimigo = gerarInimigos(3)
-    setMonstrosJogador(jogador)
-    setMonstrosInimigo(inimigo)
-    setEstadoBatalha("pareamento")
-  }
-
-  const selecionarMonstroJogador = (monstro: Monstro) => {
-    if (monstroSelecionado?.id === monstro.id) {
-      setMonstroSelecionado(null)
-    } else {
-      setMonstroSelecionado(monstro)
+    if (!batalhaIniciada && monstros.length > 0) {
+      iniciarBatalha(monstros);
+      setBatalhaIniciada(true);
     }
-  }
+  }, [monstros.length, batalhaIniciada]);
 
-  const parearComInimigo = (inimigo: Monstro) => {
-    if (!monstroSelecionado) return
+  const iniciarBatalha = async (monstros: Carta[]) => {
+    setMonstrosJogador(monstros);
+    console.log("Monstros do jogador:", monstros);
+
+    await callApiAsync<Carta[]>(
+      "/cartas/aleatorias?qtd=3",
+      "GET",
+      null,
+      (data: Carta[]) => {
+        console.log("Monstros inimigos carregados da API:", data);
+        setMonstrosInimigo(data);
+      },
+      (e: unknown) => console.error("Erro ao carregar monstros inimigos:", e)
+    );
+
+    setEstadoBatalha("pareamento");
+  };
+
+  const selecionarMonstroJogador = (monstro: Carta) => {
+    if (monstroSelecionado?.id === monstro.id) {
+      setMonstroSelecionado(null);
+    } else {
+      setMonstroSelecionado(monstro);
+    }
+  };
+
+  const parearComInimigo = (inimigo: Carta) => {
+    if (!monstroSelecionado) return;
 
     // Ve se o monstro do jogador já ta pareado
-    const indicePareamentoExistente = pareamentos.findIndex((p) => p.jogador?.id === monstroSelecionado.id)
+    const indicePareamentoExistente = pareamentos.findIndex(
+      (p) => p.jogador?.id === monstroSelecionado.id
+    );
 
     if (indicePareamentoExistente !== -1) {
-      const novosPareamentos = [...pareamentos]
-      novosPareamentos[indicePareamentoExistente] = { jogador: null, inimigo: null }
-      setPareamentos(novosPareamentos)
+      const novosPareamentos = [...pareamentos];
+      novosPareamentos[indicePareamentoExistente] = {
+        jogador: null,
+        inimigo: null,
+      };
+      setPareamentos(novosPareamentos);
     }
 
     const indiceSlot = pareamentos.findIndex(
-      (p) => p.inimigo?.id === inimigo.id || (p.jogador === null && p.inimigo === null),
-    )
+      (p) =>
+        p.inimigo?.id === inimigo.id ||
+        (p.jogador === null && p.inimigo === null)
+    );
 
     if (indiceSlot !== -1) {
-      const novosPareamentos = [...pareamentos]
+      const novosPareamentos = [...pareamentos];
       novosPareamentos[indiceSlot] = {
         jogador: monstroSelecionado,
         inimigo: inimigo,
-      }
-      setPareamentos(novosPareamentos)
-      setMonstroSelecionado(null)
+      };
+      setPareamentos(novosPareamentos);
+      setMonstroSelecionado(null);
     }
-  }
+  };
 
   const todosPareados = () => {
-    return pareamentos.every((p) => p.jogador !== null && p.inimigo !== null)
-  }
+    return pareamentos.every((p) => p.jogador !== null && p.inimigo !== null);
+  };
 
   const iniciarDuelos = async () => {
-    setEstadoBatalha("duelo")
-    setDueloAtual(0)
+    setEstadoBatalha("duelo");
+    setDueloAtual(0);
 
-    const resultados: ResultadoBatalha["duelos"] = []
+    const resultados: ResultadoBatalha["duelos"] = [];
 
     for (let i = 0; i < pareamentos.length; i++) {
-      const pareamento = pareamentos[i]
+      const pareamento = pareamentos[i];
       if (pareamento.jogador && pareamento.inimigo) {
-        setDueloAtual(i)
+        setDueloAtual(i);
 
         // Simula duelo
-        const resultado = duelar(pareamento.jogador, pareamento.inimigo)
-        setResultadoDueloAtual(resultado)
+        const resultadoDuelo = await callApiAsync<ResultadoDuelo>(
+          "/cartas/duelo",
+          "POST",
+          {
+            idCartaJogador: pareamento.jogador.id,
+            idCartaInimigo: pareamento.inimigo.id,
+          },
+          () => {
+            console.log(`Duelo ${i + 1} concluído com sucesso.`);
+          },
+          (e) => {
+            console.error(`Falha ao realizar o duelo ${i + 1}:`, e);
+          }
+        );
 
-        resultados.push({
-          monstroJogador: pareamento.jogador,
-          monstroInimigo: pareamento.inimigo,
-          resultado,
-        })
+        if (resultadoDuelo) {
+          setResultadoDueloAtual(resultadoDuelo);
 
-        // esoera animacao
-        await new Promise((resolve) => setTimeout(resolve, 3000))
-        setResultadoDueloAtual(null)
+          resultados.push({
+            monstroJogador: pareamento.jogador,
+            monstroInimigo: pareamento.inimigo,
+            resultado: resultadoDuelo,
+          });
+
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          setResultadoDueloAtual(null);
+        }
       }
     }
 
     // Calcula resultado final
-    const vitoriasJogador = resultados.filter((r) => r.resultado.vencedor?.id === r.monstroJogador.id).length
-    const vitoriasInimigo = resultados.filter((r) => r.resultado.vencedor?.id === r.monstroInimigo.id).length
-    const empates = resultados.filter((r) => r.resultado.vencedor === null).length
+    const vitoriasJogador = resultados.filter(
+      (r) => r.resultado.vencedor?.id === r.monstroJogador.id
+    ).length;
+    const vitoriasInimigo = resultados.filter(
+      (r) => r.resultado.vencedor?.id === r.monstroInimigo.id
+    ).length;
+    const empates = resultados.filter(
+      (r) => r.resultado.vencedor === null
+    ).length;
 
     const vencedorGeral: ResultadoBatalha["vencedorGeral"] =
-      vitoriasJogador > vitoriasInimigo ? "jogador" : vitoriasInimigo > vitoriasJogador ? "inimigo" : "empate"
+      vitoriasJogador > vitoriasInimigo
+        ? "jogador"
+        : vitoriasInimigo > vitoriasJogador
+        ? "inimigo"
+        : "empate";
 
     setResultadoBatalha({
       duelos: resultados,
@@ -123,41 +177,43 @@ export default function PaginaBatalha() {
       vitoriasInimigo,
       empates,
       vencedorGeral,
-    })
+    });
 
-    setEstadoBatalha("resultado")
-  }
+    setEstadoBatalha("resultado");
+  };
 
   const jogarNovamente = () => {
     setPareamentos([
       { jogador: null, inimigo: null },
       { jogador: null, inimigo: null },
       { jogador: null, inimigo: null },
-    ])
-    setMonstroSelecionado(null)
-    setResultadoBatalha(null)
-    setDueloAtual(0)
-    setResultadoDueloAtual(null)
-    iniciarBatalha()
-  }
+    ]);
+    setMonstroSelecionado(null);
+    setResultadoBatalha(null);
+    setDueloAtual(0);
+    setResultadoDueloAtual(null);
+    iniciarBatalha(monstros);
+  };
 
   const voltarHome = () => {
-    router.push("/")
-  }
+    router.push("/");
+  };
 
   if (estadoBatalha === "preparacao") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FFF9E5] to-[#F5E6C8]">
         <div className="text-center">
           <i className="fa-solid fa-swords fa-spin text-6xl text-amber-900 mb-4"></i>
-          <p className="text-2xl font-bold text-amber-900">Preparando batalha...</p>
+          <p className="text-2xl font-bold text-amber-900">
+            Preparando batalha...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (estadoBatalha === "duelo" && resultadoDueloAtual) {
-    const pareamentoAtual = pareamentos[dueloAtual]
+    const pareamentoAtual = pareamentos[dueloAtual];
     return (
       <AnimacaoDuelo
         monstroJogador={pareamentoAtual.jogador!}
@@ -165,13 +221,17 @@ export default function PaginaBatalha() {
         resultado={resultadoDueloAtual}
         numeroDuelo={dueloAtual + 1}
       />
-    )
+    );
   }
 
   if (estadoBatalha === "resultado" && resultadoBatalha) {
     return (
-      <ResultadosBatalha resultado={resultadoBatalha} aoJogarNovamente={jogarNovamente} aoVoltarHome={voltarHome} />
-    )
+      <ResultadosBatalha
+        resultado={resultadoBatalha}
+        aoJogarNovamente={jogarNovamente}
+        aoVoltarHome={voltarHome}
+      />
+    );
   }
 
   return (
@@ -184,7 +244,9 @@ export default function PaginaBatalha() {
             Arena de Batalha
           </h1>
           <p className="text-amber-700">
-            {monstroSelecionado ? "Clique em um inimigo para parear" : "Selecione um de seus monstros"}
+            {monstroSelecionado
+              ? "Clique em um inimigo para parear"
+              : "Selecione um de seus monstros"}
           </p>
         </div>
 
@@ -196,7 +258,9 @@ export default function PaginaBatalha() {
           </h2>
           <div className="flex justify-center gap-4 flex-wrap">
             {monstrosInimigo.map((inimigo, index) => {
-              const pareado = pareamentos.some((p) => p.inimigo?.id === inimigo.id)
+              const pareado = pareamentos.some(
+                (p) => p.inimigo?.id === inimigo.id
+              );
               return (
                 <div key={inimigo.id} className="relative">
                   <CartaMonstro
@@ -213,21 +277,24 @@ export default function PaginaBatalha() {
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         </div>
 
         {/* Pareamentos */}
         <div className="mb-12 bg-white/50 rounded-lg p-6 shadow-lg">
-          <h3 className="text-xl font-bold text-amber-900 mb-4 text-center">Pareamentos</h3>
+          <h3 className="text-xl font-bold text-amber-900 mb-4 text-center">
+            Pareamentos
+          </h3>
           <div className="flex justify-center gap-8 flex-wrap">
             {pareamentos.map((pareamento, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="w-20 h-24 border-2 border-dashed border-amber-600 rounded-lg flex items-center justify-center bg-amber-50">
                   {pareamento.jogador ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={pareamento.jogador.imgUrl || "/placeholder.svg"}
+                      src={pareamento.jogador.foto || "/placeholder.svg"}
                       alt={pareamento.jogador.nome}
                       className="w-16 h-16 object-contain"
                     />
@@ -238,8 +305,9 @@ export default function PaginaBatalha() {
                 <i className="fa-solid fa-swords text-2xl text-amber-700"></i>
                 <div className="w-20 h-24 border-2 border-dashed border-red-600 rounded-lg flex items-center justify-center bg-red-50">
                   {pareamento.inimigo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={pareamento.inimigo.imgUrl || "/placeholder.svg"}
+                      src={pareamento.inimigo.foto || "/placeholder.svg"}
                       alt={pareamento.inimigo.nome}
                       className="w-16 h-16 object-contain"
                     />
@@ -260,13 +328,17 @@ export default function PaginaBatalha() {
           </h2>
           <div className="flex justify-center gap-4 flex-wrap">
             {monstrosJogador.map((monstro, index) => {
-              const pareado = pareamentos.some((p) => p.jogador?.id === monstro.id)
+              const pareado = pareamentos.some(
+                (p) => p.jogador?.id === monstro.id
+              );
               return (
                 <div key={monstro.id} className="relative">
                   <CartaMonstro
                     monstro={monstro}
                     indiceOnda={index}
-                    selecionado={monstroSelecionado?.id === monstro.id || pareado}
+                    selecionado={
+                      monstroSelecionado?.id === monstro.id || pareado
+                    }
                     aoClicar={() => selecionarMonstroJogador(monstro)}
                     mostrarDetalhesAoClicar={false}
                   />
@@ -276,14 +348,18 @@ export default function PaginaBatalha() {
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         </div>
 
         {/* Botões de Ação */}
         <div className="flex justify-center gap-4 mt-12">
-          <Button onClick={voltarHome} variant="outline" className="px-8 py-6 text-lg bg-transparent">
+          <Button
+            onClick={voltarHome}
+            variant="outline"
+            className="px-8 py-6 text-lg bg-transparent"
+          >
             <i className="fa-solid fa-arrow-left mr-2"></i>
             Voltar
           </Button>
@@ -298,5 +374,5 @@ export default function PaginaBatalha() {
         </div>
       </div>
     </main>
-  )
+  );
 }

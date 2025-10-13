@@ -1,36 +1,49 @@
-"use client"
+"use client";
 
-import { obterMonstrosHome } from "@/lib/apiSimulada"
-import { Button } from "@/components/ui/button"
-import CartaMonstro from "@/components/cards/cartaMonstro"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import type { Monstro } from "@/types/monstro"
+import { Button } from "@/components/ui/button";
+import CartaMonstro from "@/components/cards/cartaMonstro";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Carta } from "@/types/carta";
+import { callApiAsync } from "@/utils/api";
+import { useMonstros } from "@/contexts/MonstrosContext";
 
 export default function Home() {
-  const router = useRouter()
-  const [monstros, setMonstros] = useState<Monstro[]>([])
-  const [exibindoVideo, setExibindoVideo] = useState(false)
-  const [carregandoCartas, setCarregandoCartas] = useState(false)
+  const router = useRouter();
+  const { monstros, setMonstros } = useMonstros(); 
+  const [exibindoVideo, setExibindoVideo] = useState(false);
+  const [carregandoCartas, setCarregandoCartas] = useState(false);
 
   const carregarCartas = async () => {
-    setExibindoVideo(true)
-    setCarregandoCartas(true)
+    setCarregandoCartas(true);
 
-    const data = obterMonstrosHome()
-    setMonstros(data)
+    await callApiAsync<Carta[]>(
+      "/cartas/aleatorias?qtd=3",
+      "GET",
+      null,
+      (data: Carta[]) => {
+        console.log("Monstros carregados da API:", data);
+        setMonstros(data);
+      },
+      (e: unknown) => { 
+        console.error("Erro ao carregar monstros:", e) 
+        setCarregandoCartas(false);
+      }
+    );
+
+    setExibindoVideo(true);
 
     setTimeout(() => {
-      setCarregandoCartas(false)
+      setCarregandoCartas(false);
       setTimeout(() => {
-        setExibindoVideo(false)
-      }, 500)
-    }, 7000)
-  }
+        setExibindoVideo(false);
+      }, 500);
+    }, 1000); // 7s
+  };
 
   const iniciarBatalha = () => {
-    router.push("/batalha")
-  }
+    router.push("/batalha");
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 md:p-24 bg-gradient-to-b from-[#FFF9E5] to-[#F5E6C8]">
@@ -43,14 +56,19 @@ export default function Home() {
               className="h-full w-auto max-w-full object-contain"
               onEnded={() => {
                 if (!carregandoCartas) {
-                  setExibindoVideo(false)
+                  setExibindoVideo(false);
                 }
               }}
             >
-              <source src="/assets/videos/andreyzinho_atualizado.mp4" type="video/mp4" />
+              <source
+                src="/assets/videos/andreyzinho_atualizado.mp4"
+                type="video/mp4"
+              />
             </video>
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/50 px-6 py-3 rounded-full backdrop-blur-sm">
-              <p className="text-white text-lg md:text-xl font-bold animate-pulse">Abrindo o baú...</p>
+              <p className="text-white text-lg md:text-xl font-bold animate-pulse">
+                Abrindo o baú...
+              </p>
             </div>
           </div>
         </div>
@@ -58,10 +76,15 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full">
         <div className="text-center space-y-2">
-          <h1 className="text-5xl md:text-6xl font-bold text-amber-900 drop-shadow-lg" style={{ fontFamily: "serif" }}>
+          <h1
+            className="text-5xl md:text-6xl font-bold text-amber-900 drop-shadow-lg"
+            style={{ fontFamily: "serif" }}
+          >
             Andrey Duelos
           </h1>
-          <p className="text-amber-700 text-sm md:text-base">Prepare-se para a batalha épica!</p>
+          <p className="text-amber-700 text-sm md:text-base">
+            Prepare-se para a batalha épica!
+          </p>
         </div>
 
         <Button
@@ -80,7 +103,11 @@ export default function Home() {
           <div className="flex justify-around items-end w-full gap-2">
             {monstros.map((monstro, index) => (
               <div key={monstro.id}>
-                <CartaMonstro monstro={monstro} indiceOnda={index} alturasPulo="4px" />
+                <CartaMonstro
+                  monstro={monstro}
+                  indiceOnda={index}
+                  alturasPulo="4px"
+                />
               </div>
             ))}
           </div>
@@ -92,11 +119,12 @@ export default function Home() {
                 <div
                   key={i}
                   className="h-32 w-24 md:h-36 md:w-28 -translate-y-4 flex flex-col items-center justify-center gap-2 border-2 rounded-lg border-purple-900 bg-gradient-to-b from-purple-600 via-blue-600 to-black p-2 shadow-xl animate-pulo-onda"
-                  style={{
-                    // @ts-ignore
-                    "--altura-pulo": "3px",
-                    animationDelay: `${i * 120}ms`,
-                  }}
+                  style={
+                    {
+                      "--altura-pulo": "3px",
+                      animationDelay: `${i * 120}ms`,
+                    } as React.CSSProperties
+                  }
                 >
                   <p className="text-white text-sm font-bold">???</p>
                   <div className="h-16 w-16 rounded-xl flex items-center justify-center text-4xl">
@@ -114,8 +142,12 @@ export default function Home() {
         className="p-4 text-2xl h-auto cursor-pointer rounded-full bg-amber-300 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed z-10 fixed top-2 right-2 transition-all hover:scale-110"
         variant="link"
       >
-        <i className={`fa-solid fa-treasure-chest ${carregandoCartas ? "fa-beat" : "fa-bounce"}`}></i>
+        <i
+          className={`fa-solid fa-treasure-chest ${
+            carregandoCartas ? "fa-beat" : "fa-bounce"
+          }`}
+        ></i>
       </Button>
     </main>
-  )
+  );
 }

@@ -1,12 +1,11 @@
 "use client"
 
-import type { Monstro } from "@/types/monstro"
-import { obterCorRaridade } from "@/lib/apiSimulada"
+import type { Carta } from "@/types/carta"
 import { useState } from "react"
 import { DetalhesMonstro } from "@/components/modals/detalhesMonstro"
 
 interface PropriedadesCartaMonstro {
-  monstro: Monstro
+  monstro: Carta
   indiceOnda?: number
   alturasPulo?: string
   aoClicar?: () => void
@@ -54,24 +53,22 @@ export default function CartaMonstro({
           animate-pulo-onda
         `}
         style={{
-          // @ts-ignore - CSS custom properties
           "--altura-pulo": alturasPulo,
           animationDelay: `${indiceOnda * 120}ms`,
-        }}
+        } as React.CSSProperties}
         onClick={handleClick}
       >
-        {/* Badge de raridade */}
-        <div
-          className={`absolute -top-2 -right-2 ${obterCorRaridade(monstro.raridade)} text-white text-xs px-2 py-1 rounded-full font-bold shadow-md`}
-        >
-          {monstro.raridade.charAt(0).toUpperCase()}
-        </div>
 
-        <p className="text-xs md:text-sm font-bold text-amber-900 text-center line-clamp-2">{monstro.nome}</p>
+        <p
+          className="text-xs md:text-sm font-bold text-amber-900 text-center truncate w-full"
+          title={monstro.nome}
+        >
+          {monstro.nome}
+        </p>
 
         <div className="flex-1 flex items-center justify-center w-full">
           <img
-            src={monstro.imgUrl || "/placeholder.svg"}
+            src={monstro.foto || "/placeholder.svg"}
             className="rounded-md max-h-16 md:max-h-20 w-auto object-contain"
             alt={`Imagem do ${monstro.nome}`}
           />
@@ -81,7 +78,7 @@ export default function CartaMonstro({
         <div className="w-full bg-amber-300 rounded-full h-1.5">
           <div
             className="bg-red-600 h-1.5 rounded-full transition-all"
-            style={{ width: `${Math.min(100, (monstro.forca / 30) * 100)}%` }}
+            style={{ width: `${Math.min(100, (monstro.dano / 30) * 100)}%` }}
           />
         </div>
       </div>

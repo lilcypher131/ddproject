@@ -1,11 +1,11 @@
 "use client"
 
-import type { Monstro, ResultadoDuelo } from "@/types/monstro"
+import type { Carta, ResultadoDuelo } from "@/types/carta"
 import { useEffect, useState } from "react"
 
 interface PropriedadesAnimacaoDuelo {
-  monstroJogador: Monstro
-  monstroInimigo: Monstro
+  monstroJogador: Carta
+  monstroInimigo: Carta
   resultado: ResultadoDuelo
   numeroDuelo: number
 }
@@ -41,7 +41,7 @@ export function AnimacaoDuelo({ monstroJogador, monstroInimigo, resultado, numer
         <div className={`text-center transition-all duration-500 ${fase === "combate" ? "animate-pulse" : ""}`}>
           <div className="relative">
             <img
-              src={monstroJogador.imgUrl || "/placeholder.svg"}
+              src={monstroJogador.foto || "/placeholder.svg"}
               alt={monstroJogador.nome}
               className="w-48 h-48 object-contain"
             />
@@ -62,7 +62,7 @@ export function AnimacaoDuelo({ monstroJogador, monstroInimigo, resultado, numer
         <div className={`text-center transition-all duration-500 ${fase === "combate" ? "animate-pulse" : ""}`}>
           <div className="relative">
             <img
-              src={monstroInimigo.imgUrl || "/placeholder.svg"}
+              src={monstroInimigo.foto || "/placeholder.svg"}
               alt={monstroInimigo.nome}
               className="w-48 h-48 object-contain"
             />
