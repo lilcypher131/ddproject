@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { UnifrakturCook as UnifrakturCookLoader } from "next/font/google"; 
 import "./globals.css";
-import { MonstrosProvider } from "@/contexts/MonstrosContext";
+import { Providers } from "@/components/Providers";
 
 const unifra = UnifrakturCookLoader({
   weight: "700", 
@@ -27,9 +27,9 @@ export default function RootLayout({
       <body
         className={`${unifra.variable} antialiased`}
       >
-        <MonstrosProvider>
+        <Providers>
           {children}
-        </MonstrosProvider>
+        </Providers>
       </body>
     </html>
   );

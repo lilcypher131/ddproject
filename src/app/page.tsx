@@ -7,12 +7,18 @@ import { useRouter } from "next/navigation";
 import type { Carta } from "@/types/carta";
 import { callApiAsync } from "@/utils/api";
 import { useMonstros } from "@/contexts/MonstrosContext";
+import { useAuth } from "@/contexts/AuthContext";
+import LoginForm from "@/components/auth/LoginForm";
+import CadastroForm from "@/components/auth/CadastroForm";
 
 export default function Home() {
   const router = useRouter();
-  const { monstros, setMonstros } = useMonstros(); 
+  const { monstros, setMonstros } = useMonstros();
+  const { user, logout, isAuthenticated } = useAuth();
   const [exibindoVideo, setExibindoVideo] = useState(false);
   const [carregandoCartas, setCarregandoCartas] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showCadastro, setShowCadastro] = useState(false);
 
   const carregarCartas = async () => {
     setCarregandoCartas(true);
@@ -85,6 +91,13 @@ export default function Home() {
           <p className="text-amber-700 text-sm md:text-base">
             Prepare-se para a batalha épica!
           </p>
+          {isAuthenticated && user && (
+            <div className="mt-4 p-3 bg-amber-100 rounded-lg border border-amber-300">
+              <p className="text-amber-800 text-sm">
+                Olá, <span className="font-bold">{user.nome}</span>!
+              </p>
+            </div>
+          )}
         </div>
 
         <Button
@@ -148,6 +161,55 @@ export default function Home() {
           }`}
         ></i>
       </Button>
+
+      {/* Botões de Autenticação */}
+      <div className="fixed top-2 left-2 z-10 flex gap-2">
+        {isAuthenticated ? (
+          <Button
+            onClick={logout}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+            variant="destructive"
+          >
+            <i className="fa-solid fa-sign-out mr-2"></i>
+            Sair
+          </Button>
+        ) : (
+          <>
+            <Button
+              onClick={() => setShowLogin(true)}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+            >
+              <i className="fa-solid fa-sign-in mr-2"></i>
+              Login
+            </Button>
+            <Button
+              onClick={() => setShowCadastro(true)}
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+            >
+              <i className="fa-solid fa-user-plus mr-2"></i>
+              Cadastro
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* Modais de Login e Cadastro */}
+      <LoginForm
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSwitchToCadastro={() => {
+          setShowLogin(false);
+          setShowCadastro(true);
+        }}
+      />
+      <CadastroForm
+        open={showCadastro}
+        onClose={() => setShowCadastro(false)}
+        onSwitchToLogin={() => {
+          setShowCadastro(false);
+          setShowLogin(true);
+        }}
+      />
     </main>
   );
 }

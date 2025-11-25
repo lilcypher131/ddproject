@@ -1,16 +1,25 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export const callApiAsync = async <T>(
   route: string,
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   payload: unknown,
   onSuccess: (data: T) => void,
-  onError?: (error: unknown) => void
+  onError?: (error: unknown) => void,
+  token?: string
 ): Promise<T | undefined> => {
   try {
-    const response = await fetch(`http://localhost:8080${route}`, {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${route}`, {
       method,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: payload ? JSON.stringify(payload) : undefined,
     });
 
