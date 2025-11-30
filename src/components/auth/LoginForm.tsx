@@ -41,7 +41,7 @@ export default function LoginForm({ open, onClose, onSwitchToCadastro }: LoginFo
         <DialogHeader>
           <DialogTitle>Login</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" style={{ fontFamily: "serif" }}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
               Email
@@ -78,7 +78,7 @@ export default function LoginForm({ open, onClose, onSwitchToCadastro }: LoginFo
           <Button
             type="submit"
             disabled={loading}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             {loading ? "Entrando..." : "Entrar"}
           </Button>
@@ -86,7 +86,7 @@ export default function LoginForm({ open, onClose, onSwitchToCadastro }: LoginFo
             <button
               type="button"
               onClick={onSwitchToCadastro}
-              className="text-amber-600 hover:text-amber-700 underline"
+              className="text-amber-600 hover:text-amber-700 underline cursor-pointer"
             >
               Não tem conta? Cadastre-se
             </button>

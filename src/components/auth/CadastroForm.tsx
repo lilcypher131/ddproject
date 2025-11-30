@@ -56,7 +56,7 @@ export default function CadastroForm({ open, onClose, onSwitchToLogin }: Cadastr
         <DialogHeader>
           <DialogTitle>Cadastro</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" style={{ fontFamily: "serif" }}>
           <div>
             <label htmlFor="nome" className="block text-sm font-medium mb-1">
               Nome
@@ -123,7 +123,7 @@ export default function CadastroForm({ open, onClose, onSwitchToLogin }: Cadastr
           <Button
             type="submit"
             disabled={loading}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             {loading ? "Cadastrando..." : "Cadastrar"}
           </Button>
@@ -131,7 +131,7 @@ export default function CadastroForm({ open, onClose, onSwitchToLogin }: Cadastr
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-amber-600 hover:text-amber-700 underline"
+              className="text-amber-600 hover:text-amber-700 underline cursor-pointer"
             >
               Já tem conta? Faça login
             </button>

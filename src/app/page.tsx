@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import CartaMonstro from "@/components/cards/cartaMonstro";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Carta } from "@/types/carta";
 import { callApiAsync } from "@/utils/api";
@@ -19,6 +19,7 @@ export default function Home() {
   const [carregandoCartas, setCarregandoCartas] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const carregarCartas = async () => {
     setCarregandoCartas(true);
@@ -53,6 +54,21 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 md:p-24 bg-gradient-to-b from-[#FFF9E5] to-[#F5E6C8]">
+      {/* === Pre-carregamento do vídeo === */}
+      <video
+        ref={videoRef}
+        src="/assets/videos/andreyzinho_atualizado.mp4"
+        preload="auto"
+        muted
+        className="hidden"
+        playsInline
+        onEnded={() => {
+          if (!carregandoCartas) {
+            setExibindoVideo(false);
+          }
+        }}
+      />
+
       {exibindoVideo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="relative w-full h-full flex items-center justify-center">
@@ -177,14 +193,14 @@ export default function Home() {
           <>
             <Button
               onClick={() => setShowLogin(true)}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg cursor-pointer"
             >
               <i className="fa-solid fa-sign-in mr-2"></i>
               Login
             </Button>
             <Button
               onClick={() => setShowCadastro(true)}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg cursor-pointer"
             >
               <i className="fa-solid fa-user-plus mr-2"></i>
               Cadastro
