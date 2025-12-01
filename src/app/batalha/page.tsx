@@ -9,6 +9,8 @@ import { ResultadosBatalha } from "@/components/batalha/resultadoBatalha";
 import { AnimacaoDuelo } from "@/components/batalha/animacaoDuelo";
 import { useMonstros } from "@/contexts/MonstrosContext";
 import { callApiAsync } from "@/utils/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { buscarCartasApi } from "@/utils/apiCartas";
 
 type EstadoBatalha = "preparacao" | "pareamento" | "duelo" | "resultado";
 
@@ -19,6 +21,7 @@ interface Pareamento {
 
 export default function PaginaBatalha() {
   const { monstros } = useMonstros();
+  const { user, isAuthenticated, token } = useAuth();
 
   const router = useRouter();
   const [estadoBatalha, setEstadoBatalha] =
@@ -51,17 +54,15 @@ export default function PaginaBatalha() {
     setMonstrosJogador(monstros);
     console.log("Monstros do jogador:", monstros);
 
-    await callApiAsync<Carta[]>(
-      "/cartas/aleatorias?qtd=3",
-      "GET",
-      null,
-      (data: Carta[]) => {
-        console.log("Monstros inimigos carregados da API:", data);
-        setMonstrosInimigo(data);
-      },
-      (e: unknown) => console.error("Erro ao carregar monstros inimigos:", e)
-    );
+    const cartasInimigas = await buscarCartasApi(3, false);
 
+    if (!cartasInimigas || cartasInimigas.length === 0) {
+      console.error("Nenhum monstro inimigo foi carregado.");
+      return;
+    }
+
+    console.log("Monstros inimigos carregados da API:", cartasInimigas);
+    setMonstrosInimigo(cartasInimigas);
     setEstadoBatalha("pareamento");
   };
 
@@ -243,6 +244,11 @@ export default function PaginaBatalha() {
             <i className="fa-solid fa-swords mr-3"></i>
             Arena de Batalha
           </h1>
+          {isAuthenticated && user && (
+            <p className="text-amber-700 font-semibold">
+              Jogador: <span className="text-amber-900">{user.nome}</span>
+            </p>
+          )}
           <p className="text-amber-700">
             {monstroSelecionado
               ? "Clique em um inimigo para parear"

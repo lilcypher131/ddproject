@@ -4,39 +4,30 @@ import { Button } from "@/components/ui/button";
 import CartaMonstro from "@/components/cards/cartaMonstro";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { Carta } from "@/types/carta";
-import { callApiAsync } from "@/utils/api";
 import { useMonstros } from "@/contexts/MonstrosContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginForm from "@/components/auth/LoginForm";
 import CadastroForm from "@/components/auth/CadastroForm";
+import { buscarCartasApi } from "@/utils/apiCartas";
 
 export default function Home() {
   const router = useRouter();
   const { monstros, setMonstros } = useMonstros();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, token } = useAuth();
   const [exibindoVideo, setExibindoVideo] = useState(false);
   const [carregandoCartas, setCarregandoCartas] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-
+  
   const carregarCartas = async () => {
     setCarregandoCartas(true);
 
-    await callApiAsync<Carta[]>(
-      "/cartas/aleatorias?qtd=3",
-      "GET",
-      null,
-      (data: Carta[]) => {
-        console.log("Monstros carregados da API:", data);
-        setMonstros(data);
-      },
-      (e: unknown) => { 
-        console.error("Erro ao carregar monstros:", e) 
-        setCarregandoCartas(false);
-      }
-    );
+    const cartas = await buscarCartasApi(3);
+
+    if (cartas && cartas.length > 0) {
+      setMonstros(cartas);
+    }
 
     setExibindoVideo(true);
 
@@ -48,6 +39,18 @@ export default function Home() {
     }, 7000); // 7 segundos
   };
 
+  const alterarCartas = async () => {
+    setCarregandoCartas(true);
+    
+    const cartas = await buscarCartasApi(3);
+    
+    if (cartas && cartas.length > 0) {
+      setMonstros(cartas);
+    }
+    
+    setCarregandoCartas(false);
+  };
+  
   const iniciarBatalha = () => {
     router.push("/batalha");
   };
@@ -70,7 +73,7 @@ export default function Home() {
       />
 
       {exibindoVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black">
           <div className="relative w-full h-full flex items-center justify-center">
             <video
               autoPlay
@@ -127,7 +130,7 @@ export default function Home() {
         </Button>
       </div>
 
-      <div className="w-full max-w-md md:max-w-2xl h-20 md:h-24 bg-gradient-to-t from-amber-800 to-amber-700 fixed bottom-0 left-1/2 -translate-x-1/2 flex justify-around items-end rounded-t-2xl shadow-2xl px-4 pb-2 border-t-4 border-amber-900">
+      <div className="w-full max-w-md md:max-w-2xl h-20 md:h-24 bg-gradient-to-t from-amber-800 to-amber-700 bottom-0 left-1/2 -translate-x-1/2 flex justify-around items-end rounded-t-2xl shadow-2xl px-4 pb-2 border-t-4 border-amber-900 fixed z-50">
         {monstros.length > 0 ? (
           <div className="flex justify-around items-end w-full gap-2">
             {monstros.map((monstro, index) => (
@@ -163,6 +166,7 @@ export default function Home() {
               ))}
           </div>
         )}
+
       </div>
 
       <Button
@@ -178,17 +182,45 @@ export default function Home() {
         ></i>
       </Button>
 
+      {/* Botão para alterar cartas */}
+      {monstros.length > 0 && (
+        <Button
+          onClick={alterarCartas}
+          disabled={carregandoCartas}
+          className="p-3 text-xl h-auto cursor-pointer rounded-full bg-blue-300 hover:bg-blue-400 disabled:opacity-50 disabled:cursor-not-allowed z-10 fixed bottom-24 right-2 transition-all hover:scale-110"
+          variant="link"
+          title="Alterar cartas"
+        >
+          <i className="fa-solid fa-shuffle"></i>
+        </Button>
+      )}
+
       {/* Botões de Autenticação */}
       <div className="fixed top-2 left-2 z-10 flex gap-2">
         {isAuthenticated ? (
-          <Button
-            onClick={logout}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
-            variant="destructive"
-          >
-            <i className="fa-solid fa-sign-out mr-2"></i>
-            Sair
-          </Button>
+          <>
+            <Button
+              onClick={() => {
+                if (user?.id) {
+                  router.push(`/perfil/${user.id}`);
+                }
+              }}
+              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg cursor-pointer transition-all hover:scale-105"
+              title="Ver meu perfil"
+            >
+              <i className="fa-solid fa-user mr-2"></i>
+              Perfil
+            </Button>
+            
+            <Button
+              onClick={logout}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+              variant="destructive"
+            >
+              <i className="fa-solid fa-sign-out mr-2"></i>
+              Sair
+            </Button>
+          </>
         ) : (
           <>
             <Button

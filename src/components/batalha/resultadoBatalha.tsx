@@ -3,6 +3,7 @@
 import type { ResultadoBatalha } from "@/types/carta"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PropriedadesResultadosBatalha {
   resultado: ResultadoBatalha
@@ -13,6 +14,7 @@ interface PropriedadesResultadosBatalha {
 export function ResultadosBatalha({ resultado, aoJogarNovamente, aoVoltarHome }: PropriedadesResultadosBatalha) {
   const [mostrarConfete, setMostrarConfete] = useState(false)
   const vitoria = resultado.vencedorGeral === "jogador"
+  const { user, isAuthenticated, token } = useAuth();
 
   useEffect(() => {
     if (vitoria) {
@@ -54,7 +56,11 @@ export function ResultadosBatalha({ resultado, aoJogarNovamente, aoVoltarHome }:
             <>
               <div className="text-6xl mb-4 animate-bounce">🏆</div>
               <h1 className="text-5xl font-bold text-green-700 mb-2">VITÓRIA!</h1>
-              <p className="text-xl text-amber-800">Você dominou a arena de batalha!</p>
+              <p className="text-xl text-amber-800">
+                  {isAuthenticated && user 
+                    ? `Parabéns, ${user.nome}! Você dominou a arena de batalha!`
+                    : "Você dominou a arena de batalha!"}
+              </p>
             </>
           ) : resultado.vencedorGeral === "empate" ? (
             <>
@@ -66,7 +72,11 @@ export function ResultadosBatalha({ resultado, aoJogarNovamente, aoVoltarHome }:
             <>
               <div className="text-6xl mb-4">💀</div>
               <h1 className="text-5xl font-bold text-red-700 mb-2">DERROTA</h1>
-              <p className="text-xl text-amber-800">Treine mais e tente novamente!</p>
+              <p className="text-xl text-amber-800">
+                  {isAuthenticated && user
+                    ? `Poxa, ${user.nome}! Você perdeu, vamos tentar novamente?`
+                    : "Treine mais e tente novamente!"}
+              </p>
             </>
           )}
         </div>

@@ -5,16 +5,17 @@ export const callApiAsync = async <T>(
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   payload: unknown,
   onSuccess: (data: T) => void,
-  onError?: (error: unknown) => void,
-  token?: string
+  onError?: (error: unknown) => void
 ): Promise<T | undefined> => {
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
     
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+    // pega token automaticamente
+    const storedToken = localStorage.getItem("auth_token");
+    if (storedToken) {
+      headers["Authorization"] = `Bearer ${storedToken}`;
     }
 
     const response = await fetch(`${API_URL}${route}`, {

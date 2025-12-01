@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.token);
     setUser(userData);
     
-    // Armazenar no localStorage (apenas token e dados básicos, nunca a senha)
+    // Armazenar no localStorage
     localStorage.setItem("auth_token", data.token);
     localStorage.setItem("auth_user", JSON.stringify(userData));
   };
